@@ -1,21 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     /* ---------- Design tokens ---------- */
     :root {
-      --bg: #FAF7F0;        /* cream white page */
-      --surface: #FFFEFB;   /* cards and inputs */
-      --ink: #2B2A26;       /* main text */
-      --muted: #7A766B;     /* secondary text */
-      --line: #E7E1D3;      /* borders */
-      --accent: #2F5D50;    /* buttons, highlights (deep green) */
-      --accent-dark: #244A3F;
-      --error: #B3402F;
+      --bg: #FAF7F0;        /* cream white background */
+      --surface: #FFFFFF;   /* pure white for cards & inputs */
+      --surface-subtle: #F3EFE6;
+      --ink: #2B2A26;       /* main high-contrast text */
+      --muted: #6B675C;     /* secondary text (WCAG AA compliant) */
+      --line: #E6E0D2;      /* border line */
+      --accent: #235446;    /* forest green button & brand */
+      --accent-hover: #193E34;
+      --accent-light: #EBF3F0;
+      --error: #C53030;
+      --error-bg: #FFF5F5;
+      --success: #22543D;
+      --success-bg: #F0FFF4;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(43, 42, 38, 0.05);
+      --shadow-md: 0 4px 16px rgba(43, 42, 38, 0.08);
+      --shadow-lg: 0 12px 32px rgba(43, 42, 38, 0.16);
     }
 
     /* ---------- Base ---------- */
@@ -25,11 +39,13 @@
       margin: 0;
       background: var(--bg);
       color: var(--ink);
-      font-family: 'Manrope', system-ui, sans-serif;
+      font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 16px;
       line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
-    h1, h2 { margin: 0; letter-spacing: -0.02em; }
+    body:has(dialog[open]) { overflow: hidden; }
+    h1, h2, h3, h4 { margin: 0; letter-spacing: -0.02em; }
     h2 { font-size: 22px; font-weight: 800; margin-bottom: 16px; }
     p { margin: 0; }
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -38,312 +54,930 @@
     header {
       position: sticky; top: 0; z-index: 10;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 20px;
-      background: var(--bg);
+      padding: 12px 20px;
+      background: rgba(250, 247, 240, 0.95);
+      backdrop-filter: blur(8px);
       border-bottom: 1px solid var(--line);
     }
-    header h1 { font-size: 22px; font-weight: 800; }
-    header small { display: block; color: var(--muted); font-size: 13px; font-weight: 500; letter-spacing: 0; }
-    main { max-width: 720px; margin: 0 auto; padding: 24px 20px 80px; }
+    .brand-wrap { display: flex; flex-direction: column; }
+    header h1 { font-size: 20px; font-weight: 800; }
+    .badge-cod {
+      display: inline-flex; align-items: center; gap: 4px;
+      color: var(--accent); font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    main { max-width: 760px; margin: 0 auto; padding: 20px 16px 80px; }
 
     /* ---------- Buttons ---------- */
     button {
       font-family: inherit; font-size: 15px; font-weight: 600;
-      border: 0; border-radius: 10px; cursor: pointer;
-      padding: 10px 16px;
-      background: var(--accent); color: #fff;
+      border: 0; border-radius: var(--radius-sm); cursor: pointer;
+      padding: 10px 16px; background: var(--accent); color: #fff;
+      transition: background 0.15s ease, transform 0.1s ease;
     }
-    button:hover { background: var(--accent-dark); }
-    button:disabled { opacity: .6; cursor: wait; }
-    .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
-    .btn-ghost:hover { background: var(--surface); }
-    .btn-wide { width: 100%; padding: 14px; font-size: 16px; margin-top: 8px; }
-    .link-back { background: none; color: var(--muted); padding: 0; margin-bottom: 16px; }
+    button:hover { background: var(--accent-hover); }
+    button:active { transform: scale(0.98); }
+    button:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .btn-ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
+    .btn-ghost:hover { background: var(--surface-subtle); }
+    .btn-wide { width: 100%; padding: 14px; font-size: 16px; margin-top: 12px; border-radius: var(--radius-md); }
+    .btn-sm { padding: 6px 12px; font-size: 13px; border-radius: 6px; }
+    .link-back {
+      background: none; color: var(--muted); padding: 6px 0; margin-bottom: 14px;
+      display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600;
+    }
     .link-back:hover { background: none; color: var(--ink); }
+    .plain { background: none; color: inherit; padding: 0; border-radius: 0; text-align: left; font-size: inherit; display: block; width: 100%; }
+    .plain:hover { background: none; }
+
+    /* Cart counter badge */
+    #cartBtn {
+      position: relative; display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 999px;
+    }
+    .cart-pill {
+      background: var(--accent); color: #fff; font-size: 12px; font-weight: 800;
+      min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px;
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .cart-pill.bump { transform: scale(1.35); }
+
+    /* ---------- Search Bar ---------- */
+    .search-wrap {
+      position: relative; margin-bottom: 20px; display: flex; align-items: center;
+    }
+    .search-icon {
+      position: absolute; left: 14px; color: var(--muted); pointer-events: none;
+    }
+    #searchInput {
+      width: 100%; padding: 12px 38px 12px 42px; font-size: 15px;
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+    }
+    #searchInput:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+    .search-clear {
+      position: absolute; right: 10px; background: none; border: 0; color: var(--muted);
+      font-size: 18px; padding: 4px 8px; border-radius: 50%;
+    }
+    .search-clear:hover { background: var(--surface-subtle); color: var(--ink); }
 
     /* ---------- Product grid ---------- */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
-    .product { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
-    .product img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: var(--line); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 16px; }
+    .product {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md);
+      overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-sm);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .product:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .product-img-wrap {
+      position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; background: var(--surface-subtle);
+    }
+    .product img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      transition: transform 0.25s ease;
+    }
+    .product:hover img { transform: scale(1.04); }
     .product-body { padding: 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
-    .product-name { font-weight: 600; font-size: 15px; line-height: 1.3; }
-    .price { color: var(--muted); font-weight: 500; }
-    .product button { margin-top: auto; width: 100%; }
+    .product-name { font-weight: 600; font-size: 15px; line-height: 1.35; color: var(--ink); }
+    .price { color: var(--accent); font-weight: 700; font-size: 15px; }
+    .product .add { margin-top: auto; width: 100%; padding: 8px 12px; font-size: 14px; }
+    [data-open] { cursor: pointer; }
+
+    /* Skeleton Loading Cards */
+    .skeleton-card {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md);
+      overflow: hidden; display: flex; flex-direction: column;
+    }
+    .skeleton-img {
+      width: 100%; aspect-ratio: 1;
+      background: linear-gradient(90deg, #EFEAE0 25%, #FAF7F0 50%, #EFEAE0 75%);
+      background-size: 200% 100%; animation: shimmer 1.5s infinite;
+    }
+    .skeleton-bar {
+      height: 14px; margin: 10px 12px 4px; border-radius: 4px;
+      background: linear-gradient(90deg, #EFEAE0 25%, #FAF7F0 50%, #EFEAE0 75%);
+      background-size: 200% 100%; animation: shimmer 1.5s infinite;
+    }
+    .skeleton-bar.short { width: 50%; height: 12px; margin-bottom: 12px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
     /* ---------- Cart ---------- */
-    .cart-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
-    .cart-info { flex: 1; }
-    .stepper { display: flex; align-items: center; gap: 10px; font-weight: 600; }
-    .stepper button { width: 32px; height: 32px; padding: 0; border-radius: 50%; background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
-    .stepper button:hover { background: var(--line); }
-    .empty { color: var(--muted); padding: 24px 0; }
-
-    /* ---------- Form ---------- */
-    label { display: block; font-size: 14px; font-weight: 600; margin: 14px 0 6px; }
-    input, select, textarea {
-      width: 100%; font-family: inherit; font-size: 16px; color: var(--ink);
-      padding: 12px; background: var(--surface);
-      border: 1px solid var(--line); border-radius: 10px;
+    .cart-row {
+      display: flex; align-items: center; gap: 14px; padding: 14px 0;
+      border-bottom: 1px solid var(--line);
     }
-    input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+    .cart-thumb {
+      width: 52px; height: 52px; border-radius: var(--radius-sm); object-fit: cover;
+      background: var(--surface-subtle); border: 1px solid var(--line); flex-shrink: 0;
+    }
+    .cart-info { flex: 1; min-width: 0; }
+    .cart-info .product-name { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cart-info .price-calc { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .cart-actions { display: flex; align-items: center; gap: 10px; }
+    .stepper { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+    .stepper button {
+      width: 32px; height: 32px; padding: 0; border-radius: 50%;
+      background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+      display: inline-flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .stepper button:hover { background: var(--surface-subtle); }
+    .btn-remove {
+      background: transparent; color: var(--muted); border: 0; padding: 6px; font-size: 18px;
+      cursor: pointer; border-radius: 6px;
+    }
+    .btn-remove:hover { color: var(--error); background: var(--error-bg); }
+    .empty { color: var(--muted); padding: 32px 0; text-align: center; font-weight: 500; }
+
+    /* ---------- Form & Inputs ---------- */
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 14px; font-weight: 700; margin-bottom: 6px; color: var(--ink); }
+    .helper-text { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    input, select, textarea {
+      width: 100%; font-family: inherit; font-size: 15px; color: var(--ink);
+      padding: 12px; background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); transition: border 0.15s, outline 0.15s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid var(--accent); border-color: var(--accent);
+    }
+    .input-invalid {
+      border-color: var(--error) !important;
+      background: var(--error-bg) !important;
+    }
+    .field-error {
+      color: var(--error); font-size: 13px; font-weight: 600; margin-top: 4px; display: none;
+    }
+    .field-error.show { display: block; }
 
     /* ---------- Summary ---------- */
-    .summary { margin-top: 24px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
-    .summary-row { display: flex; justify-content: space-between; padding: 4px 0; color: var(--muted); }
-    .summary-total { color: var(--ink); font-weight: 800; font-size: 18px; border-top: 1px solid var(--line); margin-top: 8px; padding-top: 12px; }
-    .note { color: var(--muted); font-size: 14px; margin-top: 12px; }
-    #error { color: var(--error); font-weight: 600; margin-top: 12px; }
+    .summary {
+      margin-top: 24px; padding: 18px; background: var(--surface);
+      border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
+    }
+    .summary-row { display: flex; justify-content: space-between; padding: 6px 0; color: var(--muted); font-size: 15px; }
+    .summary-total {
+      color: var(--ink); font-weight: 800; font-size: 19px;
+      border-top: 1px solid var(--line); margin-top: 10px; padding-top: 12px;
+    }
+    .cod-notice {
+      display: flex; align-items: center; gap: 8px; margin-top: 12px;
+      padding: 10px 14px; background: var(--surface-subtle); border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600; color: var(--accent);
+    }
+    #error {
+      color: var(--error); font-weight: 600; font-size: 14px; margin-top: 12px;
+      padding: 10px; background: var(--error-bg); border-radius: var(--radius-sm); display: none;
+    }
+    #error.show { display: block; }
 
-    /* ---------- Confirmation ---------- */
-    .done { text-align: center; padding: 48px 0; }
-    .tick { width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 28px; line-height: 56px; }
-    .done p { margin-bottom: 8px; }
-    .done button { margin-top: 16px; }
+    /* Spinner */
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.4); border-top-color: #fff;
+      border-radius: 50%; animation: spin 0.6s linear infinite;
+      vertical-align: middle; margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ---------- Toast ("Added") ---------- */
+    /* ---------- Order Confirmation / Receipt ---------- */
+    .done { text-align: center; padding: 20px 0 60px; }
+    .tick {
+      width: 60px; height: 60px; margin: 0 auto 16px; border-radius: 50%;
+      background: var(--accent); color: #fff; font-size: 30px; line-height: 60px;
+      box-shadow: 0 4px 14px rgba(35, 84, 70, 0.35);
+    }
+    .receipt-card {
+      margin: 24px auto; max-width: 480px; text-align: left;
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
+      padding: 22px; box-shadow: var(--shadow-md);
+    }
+    .receipt-header {
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px dashed var(--line); padding-bottom: 14px; margin-bottom: 16px;
+    }
+    .receipt-id-badge {
+      font-family: monospace; font-size: 14px; font-weight: 700;
+      background: var(--surface-subtle); padding: 4px 8px; border-radius: 6px;
+    }
+    .receipt-section { margin-bottom: 16px; font-size: 14px; }
+    .receipt-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.05em; }
+    .receipt-item-row { display: flex; justify-content: space-between; padding: 4px 0; }
+    .receipt-actions { display: flex; gap: 10px; justify-content: center; margin-top: 24px; }
+
+    /* ---------- Product modal ---------- */
+    dialog {
+      border: 0; padding: 0; background: var(--surface); color: var(--ink);
+      width: min(460px, calc(100% - 32px)); max-height: 90vh; overflow: auto;
+      border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+    }
+    dialog::backdrop { background: rgba(30, 29, 26, 0.55); backdrop-filter: blur(4px); }
+    .modal-body { position: relative; }
+    .modal-body img { width: 100%; aspect-ratio: 1; max-height: 42vh; object-fit: cover; display: block; background: var(--surface-subtle); }
+    .modal-content { padding: 20px; }
+    .modal-content h2 { margin-bottom: 6px; font-size: 20px; }
+    .desc { margin-top: 12px; color: var(--muted); font-size: 14px; line-height: 1.6; white-space: pre-line; }
+    .modal-close {
+      position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; padding: 0;
+      border-radius: 50%; font-size: 22px; line-height: 1; background: var(--surface);
+      color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow-sm);
+    }
+    .modal-actions { display: flex; align-items: center; gap: 14px; margin-top: 24px; }
+    .modal-actions #mAdd { flex: 1; padding: 12px; }
+
+    @media (max-width: 600px) {
+      dialog { width: 100%; max-width: 100%; margin: auto 0 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0; animation: slideUp .2s ease-out; }
+    }
+    @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+    /* ---------- Toast ---------- */
     #toast {
-      position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px);
-      background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 999px;
-      font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none;
-      transition: opacity .2s, transform .2s;
+      position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px); z-index: 30;
+      background: var(--ink); color: #fff; padding: 10px 20px; border-radius: 999px;
+      font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+      box-shadow: var(--shadow-lg);
     }
     #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    /* Print styling */
+    @media print {
+      header, .link-back, .receipt-actions, #toast, dialog { display: none !important; }
+      body { background: #fff; color: #000; }
+      .receipt-card { border: 1px solid #000; box-shadow: none; width: 100%; max-width: 100%; }
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <h1><span id="shopName">Shop</span><small>Cash on delivery</small></h1>
-    <button id="cartBtn" class="btn-ghost" onclick="showView('cartView')">Cart (<span id="cartCount">0</span>)</button>
+    <div class="brand-wrap">
+      <h1 id="shopName">Shop</h1>
+      <span class="badge-cod"><span>📦</span> Cash on Delivery</span>
+    </div>
+    <button id="cartBtn" class="btn-ghost" onclick="showView('cartView')" aria-label="View shopping cart">
+      <span>Cart</span>
+      <span id="cartCount" class="cart-pill">0</span>
+    </button>
   </header>
 
   <main>
-    <!-- VIEW 1: product list -->
+    <!-- VIEW 1: PRODUCT LIST -->
     <div id="shopView">
-      <div id="products" class="grid">Loading products...</div>
-    </div>
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input id="searchInput" type="search" placeholder="Search products..." aria-label="Search products" oninput="onSearchInput(this.value)">
+        <button id="searchClearBtn" class="search-clear" onclick="clearSearch()" aria-label="Clear search" hidden>&times;</button>
+      </div>
 
-    <!-- VIEW 2: cart + checkout form -->
-    <div id="cartView" hidden>
-      <button class="link-back" onclick="showView('shopView')">&larr; Keep shopping</button>
-      <h2>Your cart</h2>
-      <div id="cartItems"></div>
-
-      <div id="checkout" hidden>
-        <h2 style="margin-top:32px">Delivery details</h2>
-
-        <label for="name">Full name</label>
-        <input id="name" placeholder="Your name" autocomplete="name">
-
-        <label for="phone">Mobile number</label>
-        <input id="phone" placeholder="01XXXXXXXXX" type="tel" maxlength="11" autocomplete="tel">
-
-        <label for="address">Full address</label>
-        <textarea id="address" placeholder="House, road, area" rows="3" autocomplete="street-address"></textarea>
-
-        <label for="area">Delivery area</label>
-        <select id="area" onchange="renderCart()">
-          <option value="">Select delivery area</option>
-        </select>
-
-        <label for="note">Note (optional)</label>
-        <input id="note" placeholder="Anything we should know?">
-
-        <!-- Honeypot: hidden from humans, bots tend to fill it -->
-        <input id="website" style="display:none" tabindex="-1" autocomplete="off">
-
-        <div class="summary">
-          <div class="summary-row"><span>Subtotal</span><span><span id="subtotal">0</span> BDT</span></div>
-          <div class="summary-row"><span>Delivery</span><span><span id="deliveryCharge">0</span> BDT</span></div>
-          <div class="summary-row summary-total"><span>Total</span><span><span id="total">0</span> BDT</span></div>
-        </div>
-        <p class="note">Payment: Cash on Delivery</p>
-
-        <p id="error"></p>
-        <button id="placeBtn" class="btn-wide" onclick="placeOrder()">Place order</button>
+      <div id="products" class="grid" aria-live="polite">
+        <!-- Skeleton loaders shown initially -->
+        <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-bar"></div><div class="skeleton-bar short"></div></div>
+        <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-bar"></div><div class="skeleton-bar short"></div></div>
+        <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-bar"></div><div class="skeleton-bar short"></div></div>
+        <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-bar"></div><div class="skeleton-bar short"></div></div>
       </div>
     </div>
 
-    <!-- VIEW 3: confirmation -->
+    <!-- VIEW 2: CART & CHECKOUT -->
+    <div id="cartView" hidden>
+      <button class="link-back" onclick="showView('shopView')">&larr; Keep shopping</button>
+      <h2>Your Cart</h2>
+      <div id="cartItems" role="list"></div>
+
+      <div id="checkout" hidden>
+        <h2 style="margin-top:32px">Delivery Details</h2>
+
+        <div class="form-group">
+          <label for="name">Full Name <span style="color:var(--error)">*</span></label>
+          <input id="name" placeholder="Enter your full name" autocomplete="name" maxlength="100">
+          <div id="err-name" class="field-error">Please enter your name (at least 2 letters).</div>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Mobile Number (11-digit) <span style="color:var(--error)">*</span></label>
+          <input id="phone" placeholder="01XXXXXXXXX or +8801XXXXXXXXX" type="tel" autocomplete="tel" maxlength="20">
+          <div class="helper-text">Accepts 01XXXXXXXXX or +8801XXXXXXXXX</div>
+          <div id="err-phone" class="field-error">Please enter a valid 11-digit Bangladeshi mobile number.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="address">Delivery Address <span style="color:var(--error)">*</span></label>
+          <textarea id="address" placeholder="House no, Road no, Area, Thana / District" rows="3" autocomplete="street-address" maxlength="400"></textarea>
+          <div id="err-address" class="field-error">Please provide a detailed address (at least 10 characters).</div>
+        </div>
+
+        <div class="form-group">
+          <label for="area">Delivery Area <span style="color:var(--error)">*</span></label>
+          <select id="area" onchange="onAreaChange()">
+            <option value="">Select your delivery area</option>
+          </select>
+          <div id="err-area" class="field-error">Please select a delivery area.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="note">Order Note (Optional)</label>
+          <input id="note" placeholder="Special delivery instructions or landmark" maxlength="300">
+        </div>
+
+        <!-- Honeypot spam trap (hidden from users) -->
+        <input id="website" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+        <div class="summary">
+          <div class="summary-row"><span>Subtotal</span><span><span id="subtotal">0</span> BDT</span></div>
+          <div class="summary-row"><span>Delivery Charge</span><span><span id="deliveryCharge">Select area</span></span></div>
+          <div class="summary-row summary-total"><span>Total to Pay</span><span><span id="total">0</span> BDT</span></div>
+          <div class="cod-notice">
+            <span>🛡️</span>
+            <span>Payment Method: <strong>Cash on Delivery</strong> (Pay when you receive the product)</span>
+          </div>
+        </div>
+
+        <div id="error"></div>
+        <button id="placeBtn" class="btn-wide" onclick="placeOrder()">Place Order</button>
+      </div>
+    </div>
+
+    <!-- VIEW 3: CONFIRMATION / RECEIPT -->
     <div id="doneView" class="done" hidden>
       <div class="tick">&#10003;</div>
-      <h2>Order placed</h2>
-      <p>Order ID: <b id="doneId"></b></p>
-      <p>Total to pay: <b id="doneTotal"></b> BDT (Cash on Delivery)</p>
-      <p class="price">We will call you to confirm your order.</p>
-      <button onclick="showView('shopView')">Continue shopping</button>
+      <h2>Order Placed Successfully!</h2>
+      <p style="color:var(--muted)">Thank you! We will call you shortly to confirm your order.</p>
+
+      <div class="receipt-card">
+        <div class="receipt-header">
+          <div>
+            <div class="receipt-title">Order Number</div>
+            <span id="doneId" class="receipt-id-badge"></span>
+          </div>
+          <button class="btn-sm btn-ghost" onclick="copyOrderId()">Copy ID</button>
+        </div>
+
+        <div class="receipt-section">
+          <div class="receipt-title">Customer & Delivery Info</div>
+          <div id="doneCustomerDetails" style="line-height:1.6"></div>
+        </div>
+
+        <div class="receipt-section">
+          <div class="receipt-title">Items Ordered</div>
+          <div id="doneItemsList"></div>
+        </div>
+
+        <div style="border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px;">
+          <div class="summary-row"><span>Subtotal:</span><span><span id="doneSubtotal">0</span> BDT</span></div>
+          <div class="summary-row"><span>Delivery:</span><span><span id="doneDelivery">0</span> BDT</span></div>
+          <div class="summary-row summary-total"><span>Total (COD):</span><span><span id="doneTotal">0</span> BDT</span></div>
+        </div>
+      </div>
+
+      <div class="receipt-actions">
+        <button class="btn-ghost" onclick="window.print()">Print Receipt</button>
+        <button onclick="showView('shopView')">Continue Shopping</button>
+      </div>
     </div>
   </main>
 
-  <div id="toast">Added to cart</div>
+  <!-- PRODUCT DETAILS MODAL -->
+  <dialog id="productModal" aria-labelledby="mName">
+    <div class="modal-body">
+      <button id="mClose" class="modal-close" aria-label="Close dialog">&times;</button>
+      <img id="mImage" alt="">
+      <div class="modal-content">
+        <h2 id="mName"></h2>
+        <p class="price" id="mPrice"></p>
+        <p class="desc" id="mDesc"></p>
+        <div class="modal-actions">
+          <div class="stepper">
+            <button id="mMinus" class="btn-ghost" aria-label="Decrease quantity">&minus;</button>
+            <span id="mQty">1</span>
+            <button id="mPlus" class="btn-ghost" aria-label="Increase quantity">&plus;</button>
+          </div>
+          <button id="mAdd">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- FLOATING TOAST -->
+  <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
-  // ---------- State (kept in memory) ----------
-  let products = {};      // { id: {id, name, price, image} }
+  // ---------- Constants ----------
+  const MAX_QTY = 20;
+  const CART_STORAGE_KEY = 'shop_cart_v2';
+
+  // ---------- State ----------
+  let products = {};      // { id: {id, name, price, image, description} }
+  let productList = [];   // [{id, name, price, image, description}, ...]
   let deliveryRates = {}; // { 'Inside Dhaka': 60, ... }
   let cart = {};          // { productId: quantity }
+  let modalId = null;
+  let modalQty = 1;
+  let searchQuery = '';
+  let lastOrderDetails = null;
 
-  // ---------- Load shop data from the server on page load ----------
-  google.script.run
-    .withSuccessHandler(initShop)
-    .withFailureHandler(err => document.getElementById('products').textContent = 'Failed to load: ' + err.message)
-    .getShopData();
+  // ---------- DOM Shortcuts ----------
+  const $ = id => document.getElementById(id);
+  const modal = $('productModal');
+
+  // ================================================================
+  // 1. CART PERSISTENCE (localStorage)
+  // ================================================================
+  function loadSavedCart() {
+    try {
+      const saved = localStorage.getItem(CART_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveCart() {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    } catch (e) {}
+  }
+
+  function clearSavedCart() {
+    try {
+      localStorage.removeItem(CART_STORAGE_KEY);
+    } catch (e) {}
+  }
+
+  // ================================================================
+  // 2. LOAD SHOP DATA
+  // ================================================================
+  function loadShop() {
+    cart = loadSavedCart();
+    updateCartCount();
+
+    google.script.run
+      .withSuccessHandler(initShop)
+      .withFailureHandler(() => {
+        $('products').innerHTML = `
+          <div style="grid-column: 1 / -1; text-align:center; padding: 40px 0;">
+            <p class="empty">Unable to connect to shop database.</p>
+            <button onclick="loadShop()">Retry</button>
+          </div>`;
+      })
+      .getShopData();
+  }
 
   function initShop(data) {
-    document.getElementById('shopName').textContent = data.shopName;
+    $('shopName').textContent = data.shopName;
     document.title = data.shopName;
     deliveryRates = data.delivery;
 
-    // Fill the delivery-area dropdown
-    const areaSelect = document.getElementById('area');
+    // Delivery-area dropdown
+    const areaSelect = $('area');
+    areaSelect.length = 1;
     Object.keys(deliveryRates).forEach(area => {
       areaSelect.add(new Option(area + ' (' + deliveryRates[area] + ' BDT)', area));
     });
 
-    // Draw the product grid
+    // Clean up cart for any products no longer available
+    productList = data.products || [];
+    products = {};
+    productList.forEach(p => { products[p.id] = p; });
+
+    Object.keys(cart).forEach(id => {
+      if (!products[id]) delete cart[id];
+    });
+    saveCart();
+    updateCartCount();
+
+    renderProductGrid();
+  }
+
+  function renderProductGrid() {
+    const query = searchQuery.trim().toLowerCase();
+    const filtered = productList.filter(p => {
+      if (!query) return true;
+      return p.name.toLowerCase().includes(query) ||
+             (p.description && p.description.toLowerCase().includes(query));
+    });
+
+    if (filtered.length === 0) {
+      $('products').innerHTML = `
+        <div style="grid-column: 1 / -1; text-align:center; padding: 40px 0;">
+          <p class="empty">${query ? 'No products match your search.' : 'No products available currently.'}</p>
+          ${query ? '<button class="btn-ghost" onclick="clearSearch()">View all products</button>' : ''}
+        </div>`;
+      return;
+    }
+
     let html = '';
-    data.products.forEach(p => {
-      products[p.id] = p;
+    filtered.forEach(p => {
+      const inCartQty = cart[p.id] || 0;
       html += `
         <div class="product">
-          <img src="${esc(p.image)}" alt="${esc(p.name)}">
+          <div class="product-img-wrap">
+            <button class="plain" data-open="${esc(p.id)}" aria-label="View details: ${esc(p.name)}">
+              <img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy">
+            </button>
+          </div>
           <div class="product-body">
-            <div class="product-name">${esc(p.name)}</div>
+            <button class="plain product-name" data-open="${esc(p.id)}">${esc(p.name)}</button>
             <div class="price">${p.price} BDT</div>
-            <button onclick="addToCart('${esc(p.id)}')">Add to cart</button>
+            <button class="add" data-add="${esc(p.id)}">
+              ${inCartQty > 0 ? `Added (${inCartQty}) +` : 'Add to Cart'}
+            </button>
           </div>
         </div>`;
     });
-    document.getElementById('products').innerHTML = html || 'No products available.';
+    $('products').innerHTML = html;
   }
 
-  // ---------- Cart actions ----------
-  function addToCart(id) {
-    cart[id] = (cart[id] || 0) + 1;
+  // Live search handler
+  function onSearchInput(val) {
+    searchQuery = val;
+    $('searchClearBtn').hidden = !val;
+    renderProductGrid();
+  }
+
+  function clearSearch() {
+    searchQuery = '';
+    $('searchInput').value = '';
+    $('searchClearBtn').hidden = true;
+    renderProductGrid();
+  }
+
+  // Product Grid Event delegation
+  $('products').addEventListener('click', e => {
+    const openBtn = e.target.closest('[data-open]');
+    const addBtn = e.target.closest('[data-add]');
+    if (openBtn) openProduct(openBtn.dataset.open);
+    else if (addBtn) addToCart(addBtn.dataset.add, 1);
+  });
+
+  // ================================================================
+  // 3. PRODUCT MODAL
+  // ================================================================
+  function openProduct(id) {
+    const p = products[id];
+    if (!p) return;
+    modalId = id;
+    modalQty = 1;
+
+    $('mImage').src = p.image;
+    $('mImage').alt = p.name;
+    $('mName').textContent = p.name;
+    $('mPrice').textContent = p.price + ' BDT';
+    $('mDesc').textContent = p.description;
+    $('mDesc').hidden = !p.description;
+    renderModalQty();
+
+    if (typeof modal.showModal === 'function') modal.showModal();
+    else modal.setAttribute('open', '');
+  }
+
+  function closeModal() {
+    if (typeof modal.close === 'function') modal.close();
+    else modal.removeAttribute('open');
+  }
+
+  function renderModalQty() {
+    const p = products[modalId];
+    $('mQty').textContent = modalQty;
+    $('mAdd').textContent = 'Add to Cart \u00B7 ' + (p.price * modalQty) + ' BDT';
+    $('mMinus').disabled = modalQty <= 1;
+    $('mPlus').disabled = modalQty >= MAX_QTY;
+  }
+
+  $('mMinus').addEventListener('click', () => { modalQty = Math.max(1, modalQty - 1); renderModalQty(); });
+  $('mPlus').addEventListener('click', () => { modalQty = Math.min(MAX_QTY, modalQty + 1); renderModalQty(); });
+  $('mClose').addEventListener('click', closeModal);
+  $('mAdd').addEventListener('click', () => {
+    addToCart(modalId, modalQty);
+    closeModal();
+  });
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  modal.addEventListener('close', () => { modalId = null; });
+
+  // ================================================================
+  // 4. CART LOGIC
+  // ================================================================
+  function addToCart(id, qty) {
+    if (!products[id]) return;
+    const current = cart[id] || 0;
+    const next = Math.min(MAX_QTY, current + qty);
+    cart[id] = next;
+    saveCart();
     updateCartCount();
-    showToast('Added to cart');
+    renderProductGrid();
+
+    // Subtle counter bounce
+    const counter = $('cartCount');
+    counter.classList.add('bump');
+    setTimeout(() => counter.classList.remove('bump'), 200);
+
+    showToast(next === MAX_QTY && current + qty > MAX_QTY
+      ? 'Maximum ' + MAX_QTY + ' per item reached'
+      : 'Added to cart');
   }
 
   function changeQty(id, change) {
-    cart[id] = (cart[id] || 0) + change;
-    if (cart[id] <= 0) delete cart[id];   // remove item when qty reaches 0
+    cart[id] = Math.min(MAX_QTY, (cart[id] || 0) + change);
+    if (cart[id] <= 0) delete cart[id];
+    saveCart();
     updateCartCount();
     renderCart();
+    renderProductGrid();
+  }
+
+  function removeFromCart(id) {
+    delete cart[id];
+    saveCart();
+    updateCartCount();
+    renderCart();
+    renderProductGrid();
+    showToast('Item removed from cart');
   }
 
   function updateCartCount() {
-    const count = Object.values(cart).reduce((a, b) => a + b, 0);
-    document.getElementById('cartCount').textContent = count;
+    const totalCount = Object.values(cart).reduce((a, b) => a + b, 0);
+    $('cartCount').textContent = totalCount;
   }
 
-  // ---------- Draw the cart and totals ----------
+  function onAreaChange() {
+    clearFieldError('area');
+    renderCartTotals();
+  }
+
   function renderCart() {
-    const ids = Object.keys(cart);
-    const checkout = document.getElementById('checkout');
-    const cartItems = document.getElementById('cartItems');
+    const ids = Object.keys(cart).filter(id => products[id]);
+    const checkout = $('checkout');
 
     if (ids.length === 0) {
-      cartItems.innerHTML = '<p class="empty">Your cart is empty. Add something from the shop.</p>';
+      $('cartItems').innerHTML = '<p class="empty">Your cart is empty. Add something from the shop.</p>';
       checkout.hidden = true;
       return;
     }
 
-    let subtotal = 0;
     let html = '';
     ids.forEach(id => {
       const p = products[id];
-      subtotal += p.price * cart[id];
+      const qty = cart[id];
+      const lineTotal = p.price * qty;
       html += `
         <div class="cart-row">
+          <img src="${esc(p.image)}" alt="${esc(p.name)}" class="cart-thumb">
           <div class="cart-info">
             <div class="product-name">${esc(p.name)}</div>
-            <div class="price">${p.price} BDT</div>
+            <div class="price-calc">${p.price} BDT &times; ${qty} = <b>${lineTotal} BDT</b></div>
           </div>
-          <div class="stepper">
-            <button onclick="changeQty('${esc(id)}', -1)" aria-label="Decrease">-</button>
-            ${cart[id]}
-            <button onclick="changeQty('${esc(id)}', 1)" aria-label="Increase">+</button>
+          <div class="cart-actions">
+            <div class="stepper">
+              <button data-qty-id="${esc(id)}" data-delta="-1" aria-label="Decrease">&minus;</button>
+              <span>${qty}</span>
+              <button data-qty-id="${esc(id)}" data-delta="1" aria-label="Increase">&plus;</button>
+            </div>
+            <button class="btn-remove" data-remove-id="${esc(id)}" aria-label="Remove item">&times;</button>
           </div>
         </div>`;
     });
-    cartItems.innerHTML = html;
+    $('cartItems').innerHTML = html;
     checkout.hidden = false;
-
-    // Totals (display only - the server recalculates the real total)
-    const area = document.getElementById('area').value;
-    const delivery = area ? deliveryRates[area] : 0;
-    document.getElementById('subtotal').textContent = subtotal;
-    document.getElementById('deliveryCharge').textContent = delivery;
-    document.getElementById('total').textContent = subtotal + delivery;
+    renderCartTotals();
   }
 
-  // ---------- Place the order ----------
-  function placeOrder() {
-    const errorBox = document.getElementById('error');
-    const btn = document.getElementById('placeBtn');
-    errorBox.textContent = '';
+  function renderCartTotals() {
+    const ids = Object.keys(cart).filter(id => products[id]);
+    let subtotal = 0;
+    ids.forEach(id => {
+      subtotal += products[id].price * cart[id];
+    });
 
-    // Send only product IDs + quantities (no prices)
+    const area = $('area').value;
+    const hasArea = area && (area in deliveryRates);
+    const delivery = hasArea ? deliveryRates[area] : 0;
+    $('subtotal').textContent = subtotal;
+    $('deliveryCharge').textContent = hasArea ? (delivery + ' BDT') : 'Select area';
+    $('total').textContent = subtotal + delivery;
+  }
+
+  // Cart row click delegation
+  $('cartItems').addEventListener('click', e => {
+    const qtyBtn = e.target.closest('[data-qty-id]');
+    const removeBtn = e.target.closest('[data-remove-id]');
+    if (qtyBtn) changeQty(qtyBtn.dataset.qtyId, Number(qtyBtn.dataset.delta));
+    else if (removeBtn) removeFromCart(removeBtn.dataset.removeId);
+  });
+
+  // ================================================================
+  // 5. CLIENT VALIDATION & ORDER SUBMISSION
+  // ================================================================
+  function normalizePhone(raw) {
+    let cleaned = String(raw || '').replace(/[\s\-\(\)]/g, '');
+    if (cleaned.startsWith('+880')) cleaned = cleaned.slice(3);
+    else if (cleaned.startsWith('880')) cleaned = cleaned.slice(2);
+    else if (cleaned.startsWith('+88')) cleaned = cleaned.slice(3);
+    return cleaned;
+  }
+
+  function showFieldError(fieldId) {
+    const input = $(fieldId);
+    const err = $('err-' + fieldId);
+    if (input) input.classList.add('input-invalid');
+    if (err) err.classList.add('show');
+  }
+
+  function clearFieldError(fieldId) {
+    const input = $(fieldId);
+    const err = $('err-' + fieldId);
+    if (input) input.classList.remove('input-invalid');
+    if (err) err.classList.remove('show');
+  }
+
+  ['name', 'phone', 'address', 'area'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('input', () => clearFieldError(id));
+  });
+
+  // Auto-format phone on blur if valid
+  $('phone').addEventListener('blur', () => {
+    const raw = $('phone').value.trim();
+    if (raw) {
+      const normalized = normalizePhone(raw);
+      if (/^01[3-9]\d{8}$/.test(normalized)) {
+        $('phone').value = normalized;
+      }
+    }
+  });
+
+  function validateCheckout() {
+    let isValid = true;
+    let firstInvalid = null;
+
+    const name = $('name').value.trim();
+    if (name.length < 2) {
+      showFieldError('name');
+      isValid = false;
+      if (!firstInvalid) firstInvalid = $('name');
+    }
+
+    const rawPhone = $('phone').value.trim();
+    const phone = normalizePhone(rawPhone);
+    if (!/^01[3-9]\d{8}$/.test(phone)) {
+      showFieldError('phone');
+      isValid = false;
+      if (!firstInvalid) firstInvalid = $('phone');
+    }
+
+    const address = $('address').value.trim();
+    if (address.length < 10) {
+      showFieldError('address');
+      isValid = false;
+      if (!firstInvalid) firstInvalid = $('address');
+    }
+
+    const area = $('area').value;
+    if (!area || !(area in deliveryRates)) {
+      showFieldError('area');
+      isValid = false;
+      if (!firstInvalid) firstInvalid = $('area');
+    }
+
+    if (firstInvalid) {
+      firstInvalid.focus();
+      firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    return isValid;
+  }
+
+  function placeOrder() {
+    const errorBox = $('error');
+    const btn = $('placeBtn');
+    errorBox.textContent = '';
+    errorBox.classList.remove('show');
+
+    if (!validateCheckout()) {
+      return;
+    }
+
     const items = Object.keys(cart).map(id => ({ id: id, qty: cart[id] }));
+    if (items.length === 0) {
+      errorBox.textContent = 'Your cart is empty.';
+      errorBox.classList.add('show');
+      return;
+    }
+
     const customer = {
-      name: document.getElementById('name').value,
-      phone: document.getElementById('phone').value,
-      address: document.getElementById('address').value,
-      area: document.getElementById('area').value,
-      note: document.getElementById('note').value,
-      website: document.getElementById('website').value // honeypot
+      name: $('name').value,
+      phone: $('phone').value,
+      address: $('address').value,
+      area: $('area').value,
+      note: $('note').value,
+      website: $('website').value // honeypot
     };
 
-    // Disable the button to prevent double orders
+    // Prevent double submissions with loading spinner
     btn.disabled = true;
-    btn.textContent = 'Placing order...';
+    btn.innerHTML = '<span class="spinner"></span>Placing Order...';
 
     google.script.run
       .withSuccessHandler(res => {
         btn.disabled = false;
-        btn.textContent = 'Place order';
-        if (!res.success) { errorBox.textContent = res.error; return; }
+        btn.innerHTML = 'Place Order';
+        if (!res.success) {
+          errorBox.textContent = res.error || 'Failed to place order.';
+          errorBox.classList.add('show');
+          return;
+        }
 
-        // Success: show confirmation and clear the cart
-        document.getElementById('doneId').textContent = res.orderId;
-        document.getElementById('doneTotal').textContent = res.total;
+        // Success: display receipt and clear cart & form
+        lastOrderDetails = res;
+        renderReceipt(res);
         cart = {};
+        clearSavedCart();
         updateCartCount();
+
+        // Reset form inputs for next order
+        $('name').value = '';
+        $('phone').value = '';
+        $('address').value = '';
+        $('area').value = '';
+        $('note').value = '';
+
         showView('doneView');
       })
       .withFailureHandler(err => {
         btn.disabled = false;
-        btn.textContent = 'Place order';
-        errorBox.textContent = 'Something went wrong. Please try again.';
+        btn.innerHTML = 'Place Order';
+        errorBox.textContent = (err && err.message) ? err.message : 'Something went wrong. Please check your connection and try again.';
+        errorBox.classList.add('show');
       })
       .submitOrder(items, customer);
   }
 
-  // ---------- Helpers ----------
-  /** Show one view, hide the others. */
-  function showView(viewId) {
-    ['shopView', 'cartView', 'doneView'].forEach(v => {
-      document.getElementById(v).hidden = (v !== viewId);
-    });
-    if (viewId === 'cartView') renderCart();
-    window.scrollTo(0, 0);
+  // ================================================================
+  // 6. CONFIRMATION RECEIPT
+  // ================================================================
+  function renderReceipt(order) {
+    $('doneId').textContent = order.orderId;
+    $('doneSubtotal').textContent = order.subtotal;
+    $('doneDelivery').textContent = order.delivery;
+    $('doneTotal').textContent = order.total;
+
+    const cust = order.customer || {};
+    $('doneCustomerDetails').innerHTML = `
+      <strong>${esc(cust.name || '')}</strong><br>
+      📞 <a href="tel:${esc(cust.phone || '')}" style="color:var(--accent);font-weight:700;">${esc(cust.phone || '')}</a><br>
+      📍 ${esc(cust.address || '')} (${esc(cust.area || '')})
+      ${cust.note ? `<br><em>Note: ${esc(cust.note)}</em>` : ''}
+    `;
+
+    if (order.items && Array.isArray(order.items)) {
+      $('doneItemsList').innerHTML = order.items.map(item => `
+        <div class="receipt-item-row">
+          <span>${esc(item.name)} &times; ${item.qty}</span>
+          <strong>${item.lineTotal} BDT</strong>
+        </div>
+      `).join('');
+    } else {
+      $('doneItemsList').innerHTML = '';
+    }
   }
 
-  /** Small confirmation message at the bottom of the screen. */
+  function copyOrderId() {
+    const id = $('doneId').textContent;
+    if (!id) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(id).then(() => showToast('Order ID copied!'));
+    } else {
+      showToast('Order ID: ' + id);
+    }
+  }
+
+  // ================================================================
+  // 7. VIEW NAVIGATION & HELPERS
+  // ================================================================
+  function showView(viewId) {
+    ['shopView', 'cartView', 'doneView'].forEach(v => {
+      $(v).hidden = (v !== viewId);
+    });
+    if (viewId === 'cartView') renderCart();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   let toastTimer;
   function showToast(message) {
-    const toast = document.getElementById('toast');
+    const toast = $('toast');
     toast.textContent = message;
     toast.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove('show'), 1200);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
   }
 
-  /** Escape text before putting it inside HTML. */
   function esc(text) {
-    return String(text).replace(/[&<>"']/g, c =>
+    return String(text == null ? '' : text).replace(/[&<>"']/g, c =>
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
+
+  // ---------- Init On Load ----------
+  loadShop();
 </script>
 </body>
 </html>

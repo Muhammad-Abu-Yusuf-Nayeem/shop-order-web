@@ -1,7 +1,22 @@
 
-# Google Apps Script configuration
+# Apps Script project configuration
 .clasp.json
-
-# Google clasp authentication credentials
 .clasprc.json
-# dkjsflks dfajs
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Private keys and service-account credentials
+*service-account*.json
+*service_account*.json
+*private-key*
+*.pem
+*.key
+
+# Local credentials and debug files
+credentials.json
+secrets.json
+token.json
+*.log
