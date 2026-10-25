@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <style>
+    /* ---------- Design tokens ---------- */
+    :root {
+      --bg: #FAF7F0;        /* cream white page */
+      --surface: #FFFEFB;   /* cards and inputs */
+      --ink: #2B2A26;       /* main text */
+      --muted: #7A766B;     /* secondary text */
+      --line: #E7E1D3;      /* borders */
+      --accent: #2F5D50;    /* buttons, highlights (deep green) */
+      --accent-dark: #244A3F;
+      --error: #B3402F;
+    }
+
+    /* ---------- Base ---------- */
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Manrope', system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    h1, h2 { margin: 0; letter-spacing: -0.02em; }
+    h2 { font-size: 22px; font-weight: 800; margin-bottom: 16px; }
+    p { margin: 0; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* ---------- Layout ---------- */
+    header {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+    }
+    header h1 { font-size: 22px; font-weight: 800; }
+    header small { display: block; color: var(--muted); font-size: 13px; font-weight: 500; letter-spacing: 0; }
+    main { max-width: 720px; margin: 0 auto; padding: 24px 20px 80px; }
+
+    /* ---------- Buttons ---------- */
+    button {
+      font-family: inherit; font-size: 15px; font-weight: 600;
+      border: 0; border-radius: 10px; cursor: pointer;
+      padding: 10px 16px;
+      background: var(--accent); color: #fff;
+    }
+    button:hover { background: var(--accent-dark); }
+    button:disabled { opacity: .6; cursor: wait; }
+    .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+    .btn-ghost:hover { background: var(--surface); }
+    .btn-wide { width: 100%; padding: 14px; font-size: 16px; margin-top: 8px; }
+    .link-back { background: none; color: var(--muted); padding: 0; margin-bottom: 16px; }
+    .link-back:hover { background: none; color: var(--ink); }
+
+    /* ---------- Product grid ---------- */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+    .product { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+    .product img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: var(--line); }
+    .product-body { padding: 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .product-name { font-weight: 600; font-size: 15px; line-height: 1.3; }
+    .price { color: var(--muted); font-weight: 500; }
+    .product button { margin-top: auto; width: 100%; }
+
+    /* ---------- Cart ---------- */
+    .cart-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+    .cart-info { flex: 1; }
+    .stepper { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+    .stepper button { width: 32px; height: 32px; padding: 0; border-radius: 50%; background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+    .stepper button:hover { background: var(--line); }
+    .empty { color: var(--muted); padding: 24px 0; }
+
+    /* ---------- Form ---------- */
+    label { display: block; font-size: 14px; font-weight: 600; margin: 14px 0 6px; }
+    input, select, textarea {
+      width: 100%; font-family: inherit; font-size: 16px; color: var(--ink);
+      padding: 12px; background: var(--surface);
+      border: 1px solid var(--line); border-radius: 10px;
+    }
+    input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+
+    /* ---------- Summary ---------- */
+    .summary { margin-top: 24px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 4px 0; color: var(--muted); }
+    .summary-total { color: var(--ink); font-weight: 800; font-size: 18px; border-top: 1px solid var(--line); margin-top: 8px; padding-top: 12px; }
+    .note { color: var(--muted); font-size: 14px; margin-top: 12px; }
+    #error { color: var(--error); font-weight: 600; margin-top: 12px; }
+
+    /* ---------- Confirmation ---------- */
+    .done { text-align: center; padding: 48px 0; }
+    .tick { width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 28px; line-height: 56px; }
+    .done p { margin-bottom: 8px; }
+    .done button { margin-top: 16px; }
+
+    /* ---------- Toast ("Added") ---------- */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px);
+      background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 999px;
+      font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none;
+      transition: opacity .2s, transform .2s;
+    }
+    #toast.show { opacity: 1; transform: translate(-50%, 0); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1><span id="shopName">Shop</span><small>Cash on delivery</small></h1>
+    <button id="cartBtn" class="btn-ghost" onclick="showView('cartView')">Cart (<span id="cartCount">0</span>)</button>
+  </header>
+
+  <main>
+    <!-- VIEW 1: product list -->
+    <div id="shopView">
+      <div id="products" class="grid">Loading products...</div>
+    </div>
+
+    <!-- VIEW 2: cart + checkout form -->
+    <div id="cartView" hidden>
+      <button class="link-back" onclick="showView('shopView')">&larr; Keep shopping</button>
+      <h2>Your cart</h2>
+      <div id="cartItems"></div>
+
+      <div id="checkout" hidden>
+        <h2 style="margin-top:32px">Delivery details</h2>
+
+        <label for="name">Full name</label>
+        <input id="name" placeholder="Your name" autocomplete="name">
+
+        <label for="phone">Mobile number</label>
+        <input id="phone" placeholder="01XXXXXXXXX" type="tel" maxlength="11" autocomplete="tel">
+
+        <label for="address">Full address</label>
+        <textarea id="address" placeholder="House, road, area" rows="3" autocomplete="street-address"></textarea>
+
+        <label for="area">Delivery area</label>
+        <select id="area" onchange="renderCart()">
+          <option value="">Select delivery area</option>
+        </select>
+
+        <label for="note">Note (optional)</label>
+        <input id="note" placeholder="Anything we should know?">
+
+        <!-- Honeypot: hidden from humans, bots tend to fill it -->
+        <input id="website" style="display:none" tabindex="-1" autocomplete="off">
+
+        <div class="summary">
+          <div class="summary-row"><span>Subtotal</span><span><span id="subtotal">0</span> BDT</span></div>
+          <div class="summary-row"><span>Delivery</span><span><span id="deliveryCharge">0</span> BDT</span></div>
+          <div class="summary-row summary-total"><span>Total</span><span><span id="total">0</span> BDT</span></div>
+        </div>
+        <p class="note">Payment: Cash on Delivery</p>
+
+        <p id="error"></p>
+        <button id="placeBtn" class="btn-wide" onclick="placeOrder()">Place order</button>
+      </div>
+    </div>
+
+    <!-- VIEW 3: confirmation -->
+    <div id="doneView" class="done" hidden>
+      <div class="tick">&#10003;</div>
+      <h2>Order placed</h2>
+      <p>Order ID: <b id="doneId"></b></p>
+      <p>Total to pay: <b id="doneTotal"></b> BDT (Cash on Delivery)</p>
+      <p class="price">We will call you to confirm your order.</p>
+      <button onclick="showView('shopView')">Continue shopping</button>
+    </div>
+  </main>
+
+  <div id="toast">Added to cart</div>
+
+<script>
+  // ---------- State (kept in memory) ----------
+  let products = {};      // { id: {id, name, price, image} }
+  let deliveryRates = {}; // { 'Inside Dhaka': 60, ... }
+  let cart = {};          // { productId: quantity }
+
+  // ---------- Load shop data from the server on page load ----------
+  google.script.run
+    .withSuccessHandler(initShop)
+    .withFailureHandler(err => document.getElementById('products').textContent = 'Failed to load: ' + err.message)
+    .getShopData();
+
+  function initShop(data) {
+    document.getElementById('shopName').textContent = data.shopName;
+    document.title = data.shopName;
+    deliveryRates = data.delivery;
+
+    // Fill the delivery-area dropdown
+    const areaSelect = document.getElementById('area');
+    Object.keys(deliveryRates).forEach(area => {
+      areaSelect.add(new Option(area + ' (' + deliveryRates[area] + ' BDT)', area));
+    });
+
+    // Draw the product grid
+    let html = '';
+    data.products.forEach(p => {
+      products[p.id] = p;
+      html += `
+        <div class="product">
+          <img src="${esc(p.image)}" alt="${esc(p.name)}">
+          <div class="product-body">
+            <div class="product-name">${esc(p.name)}</div>
+            <div class="price">${p.price} BDT</div>
+            <button onclick="addToCart('${esc(p.id)}')">Add to cart</button>
+          </div>
+        </div>`;
+    });
+    document.getElementById('products').innerHTML = html || 'No products available.';
+  }
+
+  // ---------- Cart actions ----------
+  function addToCart(id) {
+    cart[id] = (cart[id] || 0) + 1;
+    updateCartCount();
+    showToast('Added to cart');
+  }
+
+  function changeQty(id, change) {
+    cart[id] = (cart[id] || 0) + change;
+    if (cart[id] <= 0) delete cart[id];   // remove item when qty reaches 0
+    updateCartCount();
+    renderCart();
+  }
+
+  function updateCartCount() {
+    const count = Object.values(cart).reduce((a, b) => a + b, 0);
+    document.getElementById('cartCount').textContent = count;
+  }
+
+  // ---------- Draw the cart and totals ----------
+  function renderCart() {
+    const ids = Object.keys(cart);
+    const checkout = document.getElementById('checkout');
+    const cartItems = document.getElementById('cartItems');
+
+    if (ids.length === 0) {
+      cartItems.innerHTML = '<p class="empty">Your cart is empty. Add something from the shop.</p>';
+      checkout.hidden = true;
+      return;
+    }
+
+    let subtotal = 0;
+    let html = '';
+    ids.forEach(id => {
+      const p = products[id];
+      subtotal += p.price * cart[id];
+      html += `
+        <div class="cart-row">
+          <div class="cart-info">
+            <div class="product-name">${esc(p.name)}</div>
+            <div class="price">${p.price} BDT</div>
+          </div>
+          <div class="stepper">
+            <button onclick="changeQty('${esc(id)}', -1)" aria-label="Decrease">-</button>
+            ${cart[id]}
+            <button onclick="changeQty('${esc(id)}', 1)" aria-label="Increase">+</button>
+          </div>
+        </div>`;
+    });
+    cartItems.innerHTML = html;
+    checkout.hidden = false;
+
+    // Totals (display only - the server recalculates the real total)
+    const area = document.getElementById('area').value;
+    const delivery = area ? deliveryRates[area] : 0;
+    document.getElementById('subtotal').textContent = subtotal;
+    document.getElementById('deliveryCharge').textContent = delivery;
+    document.getElementById('total').textContent = subtotal + delivery;
+  }
+
+  // ---------- Place the order ----------
+  function placeOrder() {
+    const errorBox = document.getElementById('error');
+    const btn = document.getElementById('placeBtn');
+    errorBox.textContent = '';
+
+    // Send only product IDs + quantities (no prices)
+    const items = Object.keys(cart).map(id => ({ id: id, qty: cart[id] }));
+    const customer = {
+      name: document.getElementById('name').value,
+      phone: document.getElementById('phone').value,
+      address: document.getElementById('address').value,
+      area: document.getElementById('area').value,
+      note: document.getElementById('note').value,
+      website: document.getElementById('website').value // honeypot
+    };
+
+    // Disable the button to prevent double orders
+    btn.disabled = true;
+    btn.textContent = 'Placing order...';
+
+    google.script.run
+      .withSuccessHandler(res => {
+        btn.disabled = false;
+        btn.textContent = 'Place order';
+        if (!res.success) { errorBox.textContent = res.error; return; }
+
+        // Success: show confirmation and clear the cart
+        document.getElementById('doneId').textContent = res.orderId;
+        document.getElementById('doneTotal').textContent = res.total;
+        cart = {};
+        updateCartCount();
+        showView('doneView');
+      })
+      .withFailureHandler(err => {
+        btn.disabled = false;
+        btn.textContent = 'Place order';
+        errorBox.textContent = 'Something went wrong. Please try again.';
+      })
+      .submitOrder(items, customer);
+  }
+
+  // ---------- Helpers ----------
+  /** Show one view, hide the others. */
+  function showView(viewId) {
+    ['shopView', 'cartView', 'doneView'].forEach(v => {
+      document.getElementById(v).hidden = (v !== viewId);
+    });
+    if (viewId === 'cartView') renderCart();
+    window.scrollTo(0, 0);
+  }
+
+  /** Small confirmation message at the bottom of the screen. */
+  let toastTimer;
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 1200);
+  }
+
+  /** Escape text before putting it inside HTML. */
+  function esc(text) {
+    return String(text).replace(/[&<>"']/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+</script>
+</body>
+</html>
