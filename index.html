@@ -123,23 +123,32 @@
     .search-clear:hover { background: var(--surface-subtle); color: var(--ink); }
 
     /* ---------- Product grid ---------- */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 16px; align-items: stretch; }
     .product {
       background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md);
       overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-sm);
       transition: transform 0.15s ease, box-shadow 0.15s ease;
+      height: 100%;
     }
     .product:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
     .product-img-wrap {
-      position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; background: var(--surface-subtle);
+      position: relative; width: 100%; aspect-ratio: 1 / 1; overflow: hidden;
+      background: #FFFFFF; border-bottom: 1px solid var(--line);
+    }
+    .product-img-wrap button.plain {
+      width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
     }
     .product img {
-      width: 100%; height: 100%; object-fit: cover; display: block;
-      transition: transform 0.25s ease;
+      width: 100%; height: 100%; object-fit: contain; display: block;
+      padding: 10px; transition: transform 0.25s ease;
     }
-    .product:hover img { transform: scale(1.04); }
-    .product-body { padding: 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
-    .product-name { font-weight: 600; font-size: 15px; line-height: 1.35; color: var(--ink); }
+    .product:hover img { transform: scale(1.06); }
+    .product-body { padding: 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .product-name {
+      font-weight: 600; font-size: 14px; line-height: 1.35; color: var(--ink);
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden; min-height: 38px;
+    }
     .price { color: var(--accent); font-weight: 700; font-size: 15px; }
     .product .add { margin-top: auto; width: 100%; padding: 8px 12px; font-size: 14px; }
     [data-open] { cursor: pointer; }
@@ -168,8 +177,8 @@
       border-bottom: 1px solid var(--line);
     }
     .cart-thumb {
-      width: 52px; height: 52px; border-radius: var(--radius-sm); object-fit: cover;
-      background: var(--surface-subtle); border: 1px solid var(--line); flex-shrink: 0;
+      width: 52px; height: 52px; border-radius: var(--radius-sm); object-fit: contain;
+      background: #FFFFFF; border: 1px solid var(--line); flex-shrink: 0; padding: 2px;
     }
     .cart-info { flex: 1; min-width: 0; }
     .cart-info .product-name { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -272,8 +281,11 @@
       border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
     }
     dialog::backdrop { background: rgba(30, 29, 26, 0.55); backdrop-filter: blur(4px); }
-    .modal-body { position: relative; }
-    .modal-body img { width: 100%; aspect-ratio: 1; max-height: 42vh; object-fit: cover; display: block; background: var(--surface-subtle); }
+    .modal-body img {
+      width: 100%; aspect-ratio: 1 / 1; max-height: 45vh;
+      object-fit: contain; display: block; background: #FFFFFF;
+      padding: 16px; border-bottom: 1px solid var(--line);
+    }
     .modal-content { padding: 20px; }
     .modal-content h2 { margin-bottom: 6px; font-size: 20px; }
     .desc { margin-top: 12px; color: var(--muted); font-size: 14px; line-height: 1.6; white-space: pre-line; }
@@ -467,6 +479,23 @@
   // ---------- Constants ----------
   const MAX_QTY = 20;
   const CART_STORAGE_KEY = 'shop_cart_v2';
+  const FALLBACK_IMG = "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20fill%3D%22%23F3EFE6%22%20width%3D%22300%22%20height%3D%22300%22%2F%3E%3Ctext%20fill%3D%22%237A766B%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214%22%20font-weight%3D%22bold%22%20x%3D%2250%25%22%20y%3D%2250%25%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E";
+
+  function handleImgError(img) {
+    img.onerror = null;
+    img.src = FALLBACK_IMG;
+  }
+
+  /**
+   * Formats prices cleanly:
+   * - Strips floating-point precision artifacts (e.g. 2099.9300000000003 -> 2099.93)
+   * - Preserves integers without trailing zeroes (e.g. 1200 -> "1200")
+   * - Shows 2 decimal places for fractional amounts (e.g. 299.99 -> "299.99", 299.9 -> "299.90")
+   */
+  function formatPrice(val) {
+    const num = Math.round((Number(val || 0) + Number.EPSILON) * 100) / 100;
+    return Number.isInteger(num) ? num.toString() : num.toFixed(2);
+  }
 
   // ---------- State ----------
   let products = {};      // { id: {id, name, price, image, description} }
@@ -575,12 +604,12 @@
         <div class="product">
           <div class="product-img-wrap">
             <button class="plain" data-open="${esc(p.id)}" aria-label="View details: ${esc(p.name)}">
-              <img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy">
+              <img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy" onerror="handleImgError(this)">
             </button>
           </div>
           <div class="product-body">
             <button class="plain product-name" data-open="${esc(p.id)}">${esc(p.name)}</button>
-            <div class="price">${p.price} BDT</div>
+            <div class="price">${formatPrice(p.price)} BDT</div>
             <button class="add" data-add="${esc(p.id)}">
               ${inCartQty > 0 ? `Added (${inCartQty}) +` : 'Add to Cart'}
             </button>
@@ -621,10 +650,11 @@
     modalId = id;
     modalQty = 1;
 
+    $('mImage').onerror = () => { $('mImage').src = FALLBACK_IMG; };
     $('mImage').src = p.image;
     $('mImage').alt = p.name;
     $('mName').textContent = p.name;
-    $('mPrice').textContent = p.price + ' BDT';
+    $('mPrice').textContent = formatPrice(p.price) + ' BDT';
     $('mDesc').textContent = p.description;
     $('mDesc').hidden = !p.description;
     renderModalQty();
@@ -641,7 +671,7 @@
   function renderModalQty() {
     const p = products[modalId];
     $('mQty').textContent = modalQty;
-    $('mAdd').textContent = 'Add to Cart \u00B7 ' + (p.price * modalQty) + ' BDT';
+    $('mAdd').textContent = 'Add to Cart \u00B7 ' + formatPrice(p.price * modalQty) + ' BDT';
     $('mMinus').disabled = modalQty <= 1;
     $('mPlus').disabled = modalQty >= MAX_QTY;
   }
@@ -723,10 +753,10 @@
       const lineTotal = p.price * qty;
       html += `
         <div class="cart-row">
-          <img src="${esc(p.image)}" alt="${esc(p.name)}" class="cart-thumb">
+          <img src="${esc(p.image)}" alt="${esc(p.name)}" class="cart-thumb" onerror="handleImgError(this)">
           <div class="cart-info">
             <div class="product-name">${esc(p.name)}</div>
-            <div class="price-calc">${p.price} BDT &times; ${qty} = <b>${lineTotal} BDT</b></div>
+            <div class="price-calc">${formatPrice(p.price)} BDT &times; ${qty} = <b>${formatPrice(lineTotal)} BDT</b></div>
           </div>
           <div class="cart-actions">
             <div class="stepper">
@@ -753,9 +783,9 @@
     const area = $('area').value;
     const hasArea = area && (area in deliveryRates);
     const delivery = hasArea ? deliveryRates[area] : 0;
-    $('subtotal').textContent = subtotal;
-    $('deliveryCharge').textContent = hasArea ? (delivery + ' BDT') : 'Select area';
-    $('total').textContent = subtotal + delivery;
+    $('subtotal').textContent = formatPrice(subtotal);
+    $('deliveryCharge').textContent = hasArea ? (formatPrice(delivery) + ' BDT') : 'Select area';
+    $('total').textContent = formatPrice(subtotal + delivery);
   }
 
   // Cart row click delegation
@@ -917,9 +947,9 @@
   // ================================================================
   function renderReceipt(order) {
     $('doneId').textContent = order.orderId;
-    $('doneSubtotal').textContent = order.subtotal;
-    $('doneDelivery').textContent = order.delivery;
-    $('doneTotal').textContent = order.total;
+    $('doneSubtotal').textContent = formatPrice(order.subtotal);
+    $('doneDelivery').textContent = formatPrice(order.delivery);
+    $('doneTotal').textContent = formatPrice(order.total);
 
     const cust = order.customer || {};
     $('doneCustomerDetails').innerHTML = `
@@ -933,7 +963,7 @@
       $('doneItemsList').innerHTML = order.items.map(item => `
         <div class="receipt-item-row">
           <span>${esc(item.name)} &times; ${item.qty}</span>
-          <strong>${item.lineTotal} BDT</strong>
+          <strong>${formatPrice(item.lineTotal)} BDT</strong>
         </div>
       `).join('');
     } else {

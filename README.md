@@ -93,6 +93,12 @@ Controls which items are displayed in the shop.
 | **Description** | Text | No | Detailed product description shown inside the modal. |
 | **Active** | Boolean | No | `TRUE` to show the item in store; `FALSE` to hide it. |
 
+> [!TIP]
+> **Product Image Best Practices:**
+> - **Aspect Ratio:** Use **1:1 square** images (e.g. `600x600px` or `800x800px`).
+> - **Background:** Plain white (`#FFFFFF`) or transparent PNGs produce the cleanest catalog appearance.
+> - **Handling Variations:** The web app automatically frames all images within a standardized 1:1 container using `object-fit: contain` with padding so that wide landscape or tall portrait photos are never cropped or distorted. If an image link breaks, an automatic SVG placeholder is shown.
+
 ### 2. `Orders` Sheet
 Logs all incoming customer orders.
 

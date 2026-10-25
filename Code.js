@@ -87,6 +87,13 @@ function normalizeBdPhone_(phone) {
 }
 
 /**
+ * Rounds currency amounts to 2 decimal places to prevent floating point inaccuracies.
+ */
+function roundMoney_(amount) {
+  return Math.round((Number(amount || 0) + Number.EPSILON) * 100) / 100;
+}
+
+/**
  * Reads the Products sheet and returns an array of product objects.
  * - Columns are found by header name, so column order does not matter.
  * - Required headers: ID, Name, Price, Image.  Optional: Description, Active.
@@ -127,7 +134,7 @@ function readProducts_(useCache) {
     const id = String(r[col.id]).trim();
     // Resilient price parsing: strips commas, BDT, ৳, and extra formatting
     const rawPrice = String(r[col.price]).replace(/[^0-9.]/g, '').trim();
-    const price = Number(rawPrice);
+    const price = roundMoney_(rawPrice);
 
     if (!id || seenIds[id]) return;                                      // empty or duplicate ID
     if (rawPrice === '' || !isFinite(price) || price < 0) return;        // bad price
@@ -206,19 +213,20 @@ function submitOrder(items, customer) {
       const qty = consolidated[id];
       if (!product) throw new Error('A product in your cart is no longer available.');
       if (qty < 1 || qty > 20) throw new Error('Invalid quantity for ' + product.name + ' (maximum 20 per item).');
-      subtotal += product.price * qty;
+      const lineTotal = roundMoney_(product.price * qty);
+      subtotal = roundMoney_(subtotal + lineTotal);
       lines.push(product.name + ' x ' + qty);
       itemSummaries.push({
         id: product.id,
         name: product.name,
         price: product.price,
         qty: qty,
-        lineTotal: product.price * qty
+        lineTotal: lineTotal
       });
     });
 
-    const delivery = DELIVERY[area];
-    const total = subtotal + delivery;
+    const delivery = roundMoney_(DELIVERY[area]);
+    const total = roundMoney_(subtotal + delivery);
 
     // 4) Safe concurrency lock with friendly timeout message
     const lock = LockService.getScriptLock();
